@@ -1,0 +1,296 @@
+/* ============================================================================
+   Bonsai — "Mille Anni in un Vaso" · Out-of-Bounds Parallax
+   A deep vertical "portal" (a dark slit) cut into the warm washi-paper page.
+   Inside it, a red sun and haze drift slowly in parallax; in front, a cut-out
+   millenary bonsai spills out of the slit's sides onto the bright paper and casts
+   a shadow on it — a pure depth illusion, no horizontal scroll. Motion is driven
+   from Bonsai.jsx; all grounds use the global palette tokens.
+   ========================================================================== */
+
+.bonsai {
+  position: relative;
+  z-index: 4; /* same light run as Philosophy(3)/Atelier(4); they don't overlap */
+  isolation: isolate;
+
+  background-color: var(--color-paper);
+  color: var(--color-sumi);
+
+  /* SEAMLESS with Philosophy above: deliberately NO top radius and NO top shadow.
+     Philosophy/Atelier are the only "lifted sheets"; this section is the SAME
+     sheet continuing down, so the visitor feels they're still descending one
+     uninterrupted piece of rice paper. */
+  padding-block: clamp(6rem, 16vh, 13rem);
+  padding-inline: clamp(1.5rem, 8vw, 9rem);
+
+  /* The bonsai is MEANT to spill past the slit onto the paper, so we do NOT clip
+     here — that's the whole concept. Any horizontal overflow from the spill is
+     already caught globally by `overflow-x: clip` on <html>/<body> (index.css),
+     so the out-of-bounds art can never produce a horizontal scrollbar. */
+}
+
+/* --- Composition anchor ----------------------------------------------------
+   Relative stage: the portal sits in normal flow (flex-centred); the heading and
+   the glass cards are absolutely positioned around it on desktop, then reflow
+   into a clean stacked column on mobile. The slit dimensions live here as custom
+   props so the tree's width can be derived from them (kept in lockstep). */
+.bonsai__inner {
+  position: relative;
+  max-width: 1400px;
+  margin-inline: auto;
+  min-height: var(--slit-h);
+  display: flex;
+  justify-content: center;
+
+  --slit-w: clamp(230px, 24vw, 360px);
+  --slit-h: clamp(460px, 74vh, 780px);
+}
+
+/* --- Editorial heading (sumi ink on paper) --------------------------------- */
+.bonsai__intro {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: min(34%, 360px);
+  z-index: 3;
+}
+
+.bonsai__eyebrow {
+  font-family: var(--font-sans);
+  font-size: clamp(0.66rem, 1vw, 0.78rem);
+  font-weight: 400;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  margin-bottom: clamp(0.9rem, 2vw, 1.5rem);
+}
+
+.bonsai__title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  color: var(--color-sumi);
+}
+
+/* --- The portal ------------------------------------------------------------
+   `overflow: visible` so the tree exondates; the dark slit is clipped by the
+   inner .bonsai__frame, never by the portal itself. */
+.bonsai__portal {
+  position: relative;
+  flex: 0 0 auto;
+  align-self: center;
+  width: var(--slit-w);
+  height: var(--slit-h);
+}
+
+/* L2 container — the visible dark slit; clips the parallaxing interior. */
+.bonsai__frame {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden; /* clips the sun/haze to the slit shape */
+  background-color: var(--color-bg-deep);
+  /* Arched "torii/doorway" head: heavily rounded top, near-square base. */
+  border-radius: clamp(110px, 16vw, 180px) clamp(110px, 16vw, 180px) 10px 10px;
+  box-shadow:
+    0 60px 90px -50px rgba(38, 34, 29, 0.7), /* the slit casts onto the paper */
+    inset 0 2px 34px rgba(0, 0, 0, 0.85); /* inner depth / vignette */
+}
+
+/* L2 parallax layer — INTENTIONALLY taller than the clip (inset -30% top/bottom)
+   so the vertical drift (yPercent ±INTERIOR_Y) can never bare a hard edge inside
+   the slit. GSAP owns its transform. */
+.bonsai__interior {
+  position: absolute;
+  inset: -30% 0;
+  will-change: transform;
+}
+
+/* The rising-sun disc — modern sumi-e vermilion. Local token (not a global). */
+.bonsai__sun {
+  --bonsai-sun: #b23a2e;
+  position: absolute;
+  top: 26%;
+  left: 50%;
+  width: 66%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 48%,
+    #c5432f 0%,
+    var(--bonsai-sun) 46%,
+    rgba(178, 58, 46, 0.32) 60%,
+    rgba(178, 58, 46, 0) 72%
+  );
+  box-shadow: 0 0 90px 12px rgba(178, 58, 46, 0.38);
+}
+
+/* Atmospheric haze: a ground fog rising from the base + a warm low glow. Slightly
+   oversized (inset -8%) so its gentle drift never reveals the clip edges. */
+.bonsai__haze {
+  position: absolute;
+  inset: -8%;
+  background:
+    linear-gradient(to top, rgba(6, 6, 5, 0.92) 0%, rgba(6, 6, 5, 0) 46%),
+    radial-gradient(120% 80% at 50% 112%, rgba(178, 58, 46, 0.2), transparent 60%);
+  animation: bonsai-haze 16s ease-in-out infinite alternate;
+}
+
+@keyframes bonsai-haze {
+  from {
+    transform: translate3d(-3%, 1%, 0);
+    opacity: 0.82;
+  }
+  to {
+    transform: translate3d(3%, -2%, 0);
+    opacity: 1;
+  }
+}
+
+/* L3 — foreground bonsai. The WRAP centres horizontally (translateX) so GSAP can
+   own the <img>'s vertical parallax without the transforms colliding. The tree is
+   wider than the slit (×1.75) so its sides spill onto the paper; capped at 94vw
+   so the spill never reaches the viewport edge. */
+.bonsai__tree-wrap {
+  position: absolute;
+  left: 50%;
+  bottom: -4%; /* roots dip just below the slit base */
+  z-index: 2;
+  width: min(calc(var(--slit-w) * 1.75), 94vw);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.bonsai__tree {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* The cast shadow on the paper — this is what sells "out of the screen". Static
+     (never animated), so it's rasterized once and just rides the parallax transform. */
+  filter: drop-shadow(0 34px 30px rgba(30, 24, 18, 0.42));
+  will-change: transform;
+}
+
+/* --- Liquid-glass cards (same frosted spec as the Hero) -------------------- */
+.bonsai__card {
+  position: absolute;
+  z-index: 3;
+  width: clamp(230px, 22vw, 300px);
+  padding: clamp(1.3rem, 1.8vw, 1.8rem) clamp(1.4rem, 1.9vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  background: rgba(255, 255, 255, 0.42);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 18px;
+  box-shadow:
+    0 30px 80px -34px rgba(18, 22, 25, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* Straddle the slit edges (left/right ~54%) so each card's inner half floats over
+   the dark portal — the frosted glass then reads against the dark, like the Hero. */
+.bonsai__card--one {
+  top: 10%;
+  left: 54%;
+}
+.bonsai__card--two {
+  bottom: 8%;
+  right: 54%;
+}
+
+.bonsai__card-kicker {
+  font-family: var(--font-sans);
+  font-size: clamp(0.58rem, 0.8vw, 0.68rem);
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.bonsai__card-title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(1.15rem, 1.7vw, 1.5rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: var(--color-sumi);
+}
+
+.bonsai__card-text {
+  font-family: var(--font-sans);
+  font-size: clamp(0.84rem, 1vw, 0.95rem);
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--color-sumi-soft);
+}
+
+/* --- Responsive ------------------------------------------------------------
+   Below the editorial breakpoint everything reflows to a single centred column:
+   heading → portal → cards. The "out-of-bounds" logic is preserved (the tree is
+   still wider than the slit and spills past it) — only the slit is narrower and
+   the floating cards become stacked, readable blocks. The global overflow-x:clip
+   keeps the lateral spill from ever creating a horizontal scrollbar. */
+@media (max-width: 900px) {
+  .bonsai__inner {
+    --slit-w: clamp(170px, 56vw, 280px);
+    --slit-h: clamp(360px, 58vh, 520px);
+
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(2.5rem, 9vw, 4rem);
+    min-height: 0;
+  }
+
+  /* Absolute → static: flow in DOM order (heading, portal, card, card). */
+  .bonsai__intro,
+  .bonsai__card {
+    position: static;
+    inset: auto;
+    width: 100%;
+    max-width: 460px;
+  }
+
+  .bonsai__intro {
+    max-width: 460px;
+  }
+
+  .bonsai__tree-wrap {
+    /* Still spills past the (now narrower) slit; capped to 90vw on phones. */
+    width: min(calc(var(--slit-w) * 1.7), 90vw);
+  }
+}
+
+@media (max-width: 480px) {
+  .bonsai {
+    padding-inline: 1.75rem;
+  }
+
+  .bonsai__title {
+    font-size: clamp(2rem, 11vw, 2.75rem);
+  }
+}
+
+/* --- Reduced motion --------------------------------------------------------
+   Disable the parallax transforms and the haze drift, but KEEP the tree's
+   drop-shadow (it's depth, not motion). JS also resolves the visible state; this
+   guarantees a correct, composed still even before/without the script. */
+@media (prefers-reduced-motion: reduce) {
+  .bonsai__interior,
+  .bonsai__tree {
+    transform: none;
+  }
+
+  .bonsai__tree-wrap {
+    transform: translateX(-50%); /* keep centring; just no parallax on the img */
+  }
+
+  .bonsai__haze {
+    animation: none;
+  }
+}

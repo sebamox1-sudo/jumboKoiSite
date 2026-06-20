@@ -1,0 +1,248 @@
+/* ============================================================================
+   Collection — "Living Jewels"
+   A horizontal art-gallery of cut-out koi. The wrapper pins to the viewport and
+   the track slides sideways under GSAP ScrollTrigger (see Collection.jsx).
+   Each fish is treated as a jewel suspended in the black void: no frame, no
+   ground, no overlay — just the koi, its giant background kanji, and a placard.
+   All colour & type come from the global tokens in index.css.
+   ========================================================================== */
+
+.collection {
+  position: relative;
+  z-index: 2; /* paints OVER .hero (z-index: 1) — this is what "swallows" it */
+  background-color: var(--color-bg);
+  isolation: isolate;
+
+  /* --- Effetto 3D Awwwards --- */
+  border-top-left-radius: 40px;
+  border-top-right-radius: 40px;
+
+  /* Ombra immensa per staccarla dal fondo + luce radente sul bordo curvo */
+  box-shadow: 0 -40px 100px rgba(0, 0, 0, 0.9),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Pull the Collection up by exactly ONE screen so it rises over the last screen
+   of the hero's sticky track — the cover is synced to the hero's push-back.
+   Gated by motion preference so reduced-motion users get a plain stacked layout
+   (no overlap, hero stays a single static screen — see Hero.css). */
+@media (prefers-reduced-motion: no-preference) {
+  .collection {
+    margin-top: -100svh;
+  }
+}
+
+/* --- Editorial intro (normal flow, above the pin) -------------------------- */
+.collection__intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(0.85rem, 1.6vw, 1.25rem);
+  padding: clamp(6rem, 16vh, 12rem) clamp(1.25rem, 5vw, 3rem)
+    clamp(3rem, 8vh, 6rem);
+}
+
+.collection__eyebrow {
+  font-family: var(--font-sans);
+  font-size: clamp(0.66rem, 1vw, 0.78rem);
+  font-weight: 400;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.collection__heading {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(2.5rem, 7vw, 5.5rem);
+  line-height: 1;
+  letter-spacing: -0.015em;
+  color: var(--color-ink);
+}
+
+.collection__lead {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  line-height: 1.55;
+  color: var(--color-ink-soft);
+  max-width: 36ch;
+}
+
+/* --- Pin target ------------------------------------------------------------
+   overflow:hidden lives ONLY here, at the viewport boundary: it hides the parts
+   of the track that have scrolled off-screen. It does NOT clip the koi, because
+   each fish only bleeds sideways into the generous gaps *between* cards, which
+   sit comfortably inside the visible frame. */
+.collection__wrapper {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* --- The sliding track ----------------------------------------------------- */
+.collection__track {
+  display: flex;
+  align-items: center;
+  /* Wide negative space so each jewel breathes and the break-out has somewhere
+     to go. No overflow clipping here — the fish must be free to escape its card. */
+  gap: clamp(3rem, 9vw, 11rem);
+  /* Leading/trailing room so the first & last fish sit clear of the edges. */
+  padding-inline: clamp(3rem, 12vw, 14rem);
+  width: max-content;
+  height: 100%;
+  will-change: transform;
+}
+
+/* --- Card ------------------------------------------------------------------
+   A tall, frameless "kakemono" slot. Transparent ground, square corners, no
+   shadow: the card is just an invisible coordinate space for the fish, the
+   kanji and the placard. NO overflow clipping — the koi is meant to break out. */
+.card {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(280px, 35vw, 450px);
+  aspect-ratio: 9 / 16;
+  max-height: 88vh;
+  background-color: transparent;
+  border-radius: 0;
+  isolation: isolate; /* keep the kanji / image / placard stack local */
+}
+
+/* Giant variety kanji — sits BEHIND the fish as faint gold texture. Rendered in
+   a mincho (serif) CJK stack for an elegant brushed feel; a generic CJK family
+   isn't guaranteed, so we name a few common ones before falling back to serif. */
+.card__kanji {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Yu Mincho', 'Hiragino Mincho ProN', 'Noto Serif JP',
+    'MS Mincho', serif;
+  font-weight: 600;
+  font-size: clamp(14rem, 30vw, 28rem);
+  line-height: 1;
+  color: var(--color-gold);
+  opacity: 0.04;
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+  will-change: transform; /* GSAP drives X — leave transform untouched in CSS */
+}
+
+/* The koi. A cut-out PNG/WebP, CONTAINED (never cropped) and oversized so it
+   spills past the card's invisible side edges. Centred via left + negative
+   margin (NOT transform), leaving `transform` entirely free for the GSAP
+   parallax. A soft drop-shadow follows the silhouette so the fish reads as
+   floating, not pasted. */
+.card__image {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
+  width: 130%; /* the break-out: 30% wider than the invisible frame */
+  height: 80%; /* leaves clear void at the bottom for the placard */
+  margin-left: -65%; /* centre the 130%-wide image (half of its own width) */
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 30px 55px rgba(0, 0, 0, 0.6));
+  user-select: none;
+  will-change: transform;
+}
+
+/* --- Gallery placard (centred in the void beneath the fish) ---------------- */
+.card__content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(0.5rem, 2.5vh, 2rem);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.4rem;
+  padding-inline: 0.5rem;
+}
+
+.card__category {
+  font-family: var(--font-sans);
+  font-size: clamp(0.62rem, 0.9vw, 0.74rem);
+  font-weight: 400;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.card__title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(1.4rem, 2.6vw, 2.1rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+}
+
+.card__subtitle {
+  font-family: var(--font-sans);
+  font-size: clamp(0.78rem, 1.1vw, 0.92rem);
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--color-ink-soft);
+  max-width: 28ch;
+}
+
+/* Quiet running index in the top corner. */
+.card__index {
+  position: absolute;
+  top: clamp(0.5rem, 2vw, 1.5rem);
+  right: clamp(0.25rem, 2vw, 1rem);
+  z-index: 2;
+  font-family: var(--font-sans);
+  font-size: clamp(0.7rem, 1vw, 0.82rem);
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  color: var(--color-ink);
+}
+
+.card__index-total {
+  color: var(--color-ink-soft);
+}
+
+/* --- Reduced-motion / no-JS fallback --------------------------------------
+   No pin, no scrub: a plain natively-scrollable strip with snap points. The
+   fish rest centred (transform untouched), so nothing looks broken. */
+.collection__wrapper--static {
+  height: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: clamp(2rem, 6vh, 5rem);
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.collection__wrapper--static .card {
+  scroll-snap-align: center;
+}
+
+/* --- Responsive tuning ----------------------------------------------------- */
+@media (max-width: 768px) {
+  .card {
+    width: clamp(220px, 70vw, 360px);
+  }
+
+  .card__kanji {
+    font-size: clamp(11rem, 46vw, 22rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card__image,
+  .card__kanji,
+  .collection__track {
+    will-change: auto;
+  }
+}

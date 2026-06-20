@@ -1,0 +1,418 @@
+/* ============================================================================
+   Bespoke — "Progetta il tuo Silenzio" · closing CTA / inquiry form
+   The site flips from warm washi paper to a nocturnal inkstone world via a
+   pinned "sumi ink drop": a black clip-path circle blooms up from the bottom and
+   swallows the screen, uncovering a dark liquid-glass form. Motion is driven from
+   Bespoke.jsx; grounds use the global palette tokens (+ one local ink token).
+   ========================================================================== */
+
+.bespoke {
+  position: relative;
+  z-index: 5; /* the last sheet — sits above Atelier (z-index: 4) */
+  isolation: isolate;
+
+  --bespoke-ink: #12100f; /* the rich nocturnal ground specified for the form */
+
+  background-color: var(--bespoke-ink);
+  color: var(--color-ink);
+}
+
+/* --- 1. The stacked stage (paper ◂ ink ◂ form, all in the SAME space) -------
+   On desktop this is the single pinned element: exactly one viewport tall, so the
+   ink-drop clip-path covers the screen and reveals the form already layered here.
+   Because nothing sits BELOW it, the pin-spacer can't push an empty panel down. */
+.bespoke__stage {
+  position: relative;
+  z-index: 1;
+  height: 100svh;
+  overflow: hidden;
+}
+
+/* The light "before" layer the ink wipes away — seamless with the end of Atelier.
+   z-index 1: the lowest layer of the stack. */
+.bespoke__paper {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-color: var(--color-paper);
+}
+
+/* The ink itself. Starts as a zero-radius drop at the bottom-centre; GSAP grows
+   the clip-path to 150% (past the corners) to fully cover the viewport. */
+/* The ink ground (dark). z-index 2: sits over the paper. The clip-path is the
+   "drop" GSAP grows from 0% (a point at the bottom) to 150% (past the corners).
+   It also serves as the dark background the revealed form sits on. */
+.bespoke__ink {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background-color: var(--bespoke-ink);
+  -webkit-clip-path: circle(0% at 50% 100%);
+  clip-path: circle(0% at 50% 100%);
+}
+
+/* Wet-inkstone texture, layered low + blended so it reads as a sheen on the
+   near-black rather than a literal photo. Tune opacity / blend to taste. */
+.bespoke__ink::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/assets/inquiry-bg.png') center / cover no-repeat;
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+/* --- 2. The form world — stacked in the SAME stage, revealed in place -------
+   z-index 3: the top layer. Absolutely fills the stage and centres the card. */
+.bespoke__layout {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: clamp(4rem, 12vh, 9rem);
+  padding-inline: clamp(1.5rem, 8vw, 9rem);
+}
+
+/* The card's bounding box — the koi is anchored to THIS, so it bleeds off the
+   card (not the whole stage). */
+.bespoke__card-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+}
+
+/* Koi — portrait (≈3:4). Contained to a sensible size and anchored to the card's
+   bottom-left so it rises behind the frosted glass (blurred) and only its lower
+   corner spills onto the dark ground. z-index 1 < glass 2 = behind the card. */
+.bespoke__koi {
+  position: absolute;
+  left: -16%; /* Spostata verso destra per svelare meglio il corpo */
+  bottom: -2%; /* Leggermente sollevata */
+  z-index: 1;
+  width: min(380px, 45%); /* Un tocco più grande per bilanciare lo spostamento */
+  height: auto;
+  max-height: 92%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  /* Nota: drop-shadow rimosso intenzionalmente per evitare aloni quadrati sul blend mode */
+}
+
+/* --- The liquid-glass card (dark spec) ------------------------------------- */
+.bespoke__glass {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr; /* asymmetric: editorial | form */
+  gap: clamp(2rem, 5vw, 5rem);
+  padding: clamp(1.75rem, 4vw, 4rem);
+
+  background: rgba(255, 255, 255, 0.05);
+  -webkit-backdrop-filter: blur(1px) saturate(150%);
+  backdrop-filter: blur(1px) saturate(130%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 26px;
+  box-shadow:
+    0 60px 120px -50px rgba(0, 0, 0, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* --- Editorial column ------------------------------------------------------ */
+.bespoke__editorial {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 1.6rem);
+  align-self: center;
+}
+
+.bespoke__eyebrow {
+  font-family: var(--font-sans);
+  font-size: clamp(0.62rem, 0.9vw, 0.74rem);
+  font-weight: 400;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.bespoke__title {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(2.4rem, 5vw, 4.25rem);
+  line-height: 1;
+  letter-spacing: -0.015em;
+  color: var(--color-ink);
+}
+
+.bespoke__lead {
+  font-family: var(--font-sans);
+  font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+  line-height: 1.65;
+  color: var(--color-ink-soft);
+  max-width: 42ch;
+}
+
+/* --- Form ------------------------------------------------------------------ */
+.bespoke__form {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.25rem, 2.4vw, 1.75rem);
+}
+
+.bespoke__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.bespoke__label {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+  padding: 0;
+}
+
+/* Elegant underline inputs — no default outline; gold focus line + soft glow. */
+.bespoke__input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(236, 231, 221, 0.22);
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  padding: 0.5rem 0.2rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.bespoke__input::placeholder {
+  color: rgba(236, 231, 221, 0.3);
+}
+
+.bespoke__input:focus {
+  outline: none;
+  border-bottom-color: var(--color-gold);
+  box-shadow: 0 1px 0 0 var(--color-gold); /* the underline "lights up" */
+}
+
+/* --- Chip groups (custom-styled radios) ------------------------------------ */
+.bespoke__group {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-inline-size: 0; /* let the fieldset shrink inside the grid */
+}
+
+.bespoke__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.bespoke__chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.6rem 1.15rem;
+  border-radius: 999px;
+  border: 1px solid rgba(236, 231, 221, 0.2);
+  color: var(--color-ink-soft);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.3s ease, border-color 0.3s ease, background-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.bespoke__chip:hover {
+  color: var(--color-ink);
+  border-color: rgba(200, 168, 107, 0.5);
+}
+
+/* Selected: gold-tinted with a soft inner glow (pill "inner-shadow" feel). */
+.bespoke__chip.is-selected {
+  color: var(--color-ink);
+  border-color: rgba(200, 168, 107, 0.7);
+  background-color: rgba(200, 168, 107, 0.12);
+  box-shadow: inset 0 0 18px rgba(200, 168, 107, 0.2);
+}
+
+/* Visually-hidden native radio (keeps full accessibility + keyboard support). */
+.bespoke__chip-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.bespoke__chip:has(.bespoke__chip-input:focus-visible) {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* --- Conditional pond-volume (GSAP animates height 0 ⇄ auto) --------------- */
+.bespoke__conditional {
+  height: 0;
+  overflow: hidden; /* clip while the height tweens */
+}
+
+.bespoke__group--nested {
+  padding-top: 1.25rem; /* breathing room once expanded (included in auto height) */
+}
+
+/* --- Submit: magnetic + gold glow ------------------------------------------ */
+.bespoke__actions {
+  margin-top: 0.4rem;
+}
+
+.bespoke__submit {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(200, 168, 107, 0.55);
+  background-color: rgba(200, 168, 107, 0.06);
+  color: var(--color-gold);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  /* Subtle resting aura built from the global gold token; intensifies on hover.
+     transform is intentionally NOT transitioned — GSAP owns it (magnetic drift). */
+  box-shadow: 0 0 26px -8px rgba(200, 168, 107, 0.45);
+  transition: color 0.4s ease, background-color 0.4s ease, box-shadow 0.4s ease,
+    border-color 0.4s ease;
+  will-change: transform;
+}
+
+.bespoke__submit:hover {
+  color: var(--color-bg-deep);
+  background-color: var(--color-gold);
+  border-color: var(--color-gold);
+  box-shadow:
+    0 0 44px rgba(200, 168, 107, 0.5),
+    inset 0 0 20px rgba(255, 255, 255, 0.25);
+}
+
+.bespoke__submit:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+}
+
+/* --- Thank-you state -------------------------------------------------------- */
+.bespoke__thanks {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.8rem;
+}
+
+.bespoke__thanks-kicker {
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  color: var(--color-gold);
+}
+
+.bespoke__thanks-title {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  color: var(--color-ink);
+}
+
+.bespoke__thanks-text {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-ink-soft);
+  max-width: 36ch;
+}
+
+/* --- Responsive: stack to a single column ---------------------------------- */
+@media (max-width: 860px) {
+  /* No pin on touch (the stacked form is taller than the viewport): let the stage
+     GROW with its content and scroll natively. The form world drives the height;
+     the ink + paper just cover it. */
+  .bespoke__stage {
+    height: auto;
+    min-height: 100svh;
+    overflow: visible;
+  }
+
+  .bespoke__paper {
+    display: none; /* no light→ink wipe on mobile; land straight on the dark */
+  }
+
+  .bespoke__layout {
+    position: relative; /* back into flow so it defines the stage height */
+    inset: auto;
+    min-height: 100svh;
+  }
+
+  .bespoke__glass {
+    grid-template-columns: 1fr;
+    gap: clamp(1.75rem, 7vw, 2.75rem);
+  }
+
+  .bespoke__koi {
+    width: min(300px, 50%);
+    max-height: 65%;
+    left: -15%;
+    bottom: -10%;
+    opacity: 0.92;
+  }
+}
+
+@media (max-width: 480px) {
+  .bespoke__layout {
+    padding-inline: 1.5rem;
+  }
+
+  .bespoke__chips {
+    gap: 0.5rem;
+  }
+
+  .bespoke__chip {
+    padding: 0.55rem 0.95rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* --- Reduced motion: no ink drop, no pin (JS also resolves these) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  /* Land straight in the dark form world: ink fully covering, paper gone. */
+  .bespoke__ink {
+    -webkit-clip-path: circle(150% at 50% 50%);
+    clip-path: circle(150% at 50% 50%);
+  }
+
+  .bespoke__paper {
+    display: none;
+  }
+
+  .bespoke__stage {
+    height: auto;
+    min-height: 100svh;
+    overflow: visible;
+  }
+
+  .bespoke__layout {
+    position: relative;
+    inset: auto;
+    min-height: 100svh;
+  }
+}

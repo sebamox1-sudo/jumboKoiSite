@@ -1,0 +1,358 @@
+/* ============================================================================
+   Atelier — "Precisione e Vita" (Ecosistemi)
+   The trust section: a rigorous CAD blueprint becomes a living pond through a
+   scroll-driven "morph reveal" — no before/after slider, just an expanding
+   radial mask that lights the photograph up out of the technical drawing.
+   Stays on the warm washi-paper ground introduced by Philosophy for continuity.
+   Pin, mask reveal, SVG draw and caption crossfade are all driven from
+   Atelier.jsx; the palette comes from the global tokens in index.css.
+   ========================================================================== */
+
+.atelier {
+  position: relative;
+  z-index: 4; /* paints over Philosophy (z-index: 3) as it rises into view */
+  isolation: isolate;
+
+  background-color: var(--color-paper); /* coherence with Philosophy's light */
+  color: var(--color-sumi);
+
+  padding-block: clamp(6rem, 16vh, 14rem);
+  padding-inline: clamp(1.5rem, 8vw, 9rem);
+  overflow: hidden;
+}
+
+/* --- Asymmetric composition ------------------------------------------------
+   12-column grid: a narrow text column on the left adrift in whitespace, the
+   large reveal stage occupying the right two-thirds. */
+.atelier__inner {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  align-items: center;
+  column-gap: clamp(2rem, 6vw, 7rem);
+  max-width: 1500px;
+  margin-inline: auto;
+}
+
+/* --- Text column ----------------------------------------------------------- */
+.atelier__text {
+  grid-column: 1 / 5;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 3.5vh, 2.75rem);
+  /* `data-ink` elements start blurred & transparent (set by GSAP); the values
+     below are what a reduced-motion visitor — who never runs the tween — sees. */
+}
+
+.atelier__eyebrow {
+  font-family: var(--font-sans);
+  font-size: clamp(0.66rem, 1vw, 0.78rem);
+  font-weight: 400;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.atelier__title {
+  /* The "mincho/serif" headline — Syne is the project's display face. */
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(2.5rem, 6vw, 5.25rem);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  color: var(--color-sumi);
+}
+
+.atelier__lead {
+  /* Clean sans support text, per brief — sets it apart from the serif title. */
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  line-height: 1.7;
+  color: var(--color-sumi-soft);
+  max-width: 40ch;
+}
+
+/* --- Reveal stage ----------------------------------------------------------
+   The square-ish frame that holds the stacked blueprint + reality layers. It is
+   the pin target; while pinned, the radial mask on the reality layer opens. */
+.atelier__stage {
+  grid-column: 5 / 13;
+  position: relative;
+  margin: 0;
+  aspect-ratio: 4 / 3;
+  border-radius: 8px;
+  overflow: hidden;
+  /* Blueprint blue ground: if the .webp hasn't been added yet the layers
+     degrade to this calm CAD-blue block rather than a broken-image icon. */
+  background-color: #0e2a47;
+  box-shadow: 0 50px 90px -40px rgba(38, 34, 29, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* Both photographic layers fill the stage identically and are stacked. */
+.atelier__layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  user-select: none;
+}
+
+/* Base layer: the fixed technical drawing. */
+.atelier__layer--blueprint {
+  z-index: 1;
+}
+
+/* Reveal layer: the finished pond, sitting above the blueprint and the overlay,
+   clipped by a soft-edged radial mask. `--reveal` (0% → 160%, animated by GSAP)
+   is the radius of the opaque core; a 12% feathered ring past it makes the edge
+   read as light spreading, not a hard wipe. Centred on the basin (50% 55%). */
+.atelier__layer--reality {
+  z-index: 3;
+  --reveal: 0%; /* GSAP scrubs this open; static 0 = hidden before JS runs */
+  /* Centre of the radial mask = where the water "is born". On the 4:3 desktop
+     crop the basin sits at 50% 55%; these are custom props so each breakpoint
+     can re-aim the origin when object-fit:cover re-frames the photo (the square
+     mobile crop pushes the basin higher — see the responsive block below). */
+  --mask-x: 50%;
+  --mask-y: 55%;
+  -webkit-mask-image: radial-gradient(
+    circle at var(--mask-x) var(--mask-y),
+    #000 0%,
+    #000 var(--reveal),
+    transparent calc(var(--reveal) + 12%)
+  );
+  mask-image: radial-gradient(
+    circle at var(--mask-x) var(--mask-y),
+    #000 0%,
+    #000 var(--reveal),
+    transparent calc(var(--reveal) + 12%)
+  );
+  /* NOTE: no `will-change: mask-image`. mask-image is NOT a compositor-animatable
+     property, so hinting it does nothing useful and only pins extra memory. The
+     desktop reveal is comfortable as-is; the touch branch (below) is where we
+     actually change technique and isolate the layer for compositing. */
+}
+
+/* --- SVG technical overlay -------------------------------------------------
+   Drawn-in CAD linework over the blueprint (below the reality reveal). Strokes
+   start fully "undrawn" (dashoffset 1, dasharray 1 via pathLength=1) and GSAP
+   tweens the offset to 0. White, faintly glowing, thin — like a plot. */
+.atelier__grid {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.atelier__draw {
+  fill: none;
+  stroke: rgba(232, 240, 255, 0.55);
+  stroke-width: 0.4;
+  vector-effect: non-scaling-stroke; /* keep hairlines crisp despite viewBox scale */
+  stroke-dasharray: 1; /* with pathLength=1, one full dash spans the whole path */
+  stroke-dashoffset: 1; /* start hidden; JS animates to 0 (reduced-motion: 0) */
+}
+
+/* --- Captions --------------------------------------------------------------
+   Stacked in the same corner; GSAP crossfades plan → reality with the scrub. */
+.atelier__caption {
+  position: absolute;
+  left: clamp(1rem, 2.5vw, 2rem);
+  bottom: clamp(1rem, 2.5vw, 2rem);
+  z-index: 4;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  font-family: var(--font-sans);
+  font-size: clamp(0.72rem, 1.1vw, 0.9rem);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #eaf1ff;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
+}
+
+.atelier__caption-num {
+  font-family: var(--font-serif);
+  font-size: 1.15em;
+  letter-spacing: 0;
+  color: var(--color-gold);
+}
+
+/* "Opera" starts hidden (sits over "Progetto") — GSAP fades it in. */
+.atelier__caption--real {
+  opacity: 0;
+}
+
+/* Readability scrim behind the captions. Photographs (especially the finished
+   pond) can darken or busy-up the corner where the labels sit; this soft
+   gradient guarantees the white caption text always keeps its contrast over any
+   frame of the reveal. Sits just under the captions (z 3.5 < caption z 4),
+   above both photo layers. Desktop anchors it to the bottom-left where the
+   captions live; the responsive block re-aims it to the top on touch. */
+.atelier__stage::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 38%;
+  z-index: 3; /* below captions (4), above reality layer (3 paints first) */
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(8, 18, 32, 0.55) 0%,
+    rgba(8, 18, 32, 0.22) 45%,
+    transparent 100%
+  );
+}
+
+/* --- Responsive ------------------------------------------------------------
+   Below the editorial breakpoint the grid collapses to a single, more spacious
+   column. Goals: generous side margins (editorial breathing room), a title that
+   scales fluidly without dominating the small screen, captions kept clear of
+   the thumb zone, and a mask origin re-aimed for the square crop. */
+@media (max-width: 900px) {
+  .atelier {
+    /* Wider side gutters than the desktop minimum so text + stage breathe. */
+    padding-block: clamp(4.5rem, 12vh, 8rem);
+    padding-inline: clamp(2rem, 7vw, 3.5rem);
+  }
+
+  .atelier__inner {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2.5rem, 9vw, 4.5rem);
+  }
+
+  .atelier__text {
+    align-self: stretch;
+    gap: clamp(1.1rem, 4vw, 1.75rem);
+  }
+
+  /* Title: readable but not overpowering — fluid clamp tuned to phone widths
+     (the desktop clamp's 2.5rem floor felt heavy on a 1:1 column). */
+  .atelier__title {
+    font-size: clamp(2.25rem, 9vw, 3.4rem);
+    line-height: 1.02;
+  }
+
+  .atelier__lead {
+    font-size: clamp(1rem, 3.4vw, 1.12rem);
+    max-width: 46ch; /* a touch wider so lines don't get ragged in the column */
+  }
+
+  .atelier__stage {
+    align-self: stretch;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+
+  /* TOUCH MASK — size-driven instead of color-stop-driven.
+     -------------------------------------------------------
+     On the square (1:1) mobile stage the reveal is a FIXED radial gradient whose
+     `mask-size` is animated by GSAP via `--reveal` (0% → 165%). Why not the
+     desktop color-stop technique? Animating a stop INSIDE the gradient forces
+     Safari/WebKit to regenerate AND re-rasterize the whole gradient every scroll
+     frame — the classic source of iOS reveal jank. Animating `mask-size` of a
+     static gradient lets the compositor scale an already-rasterized mask, and the
+     soft feather (66% → 100%) is baked in, so the "spreading light" edge is kept.
+     mask-position 50% 50% on a square box = zero focal drift as it grows. */
+  .atelier__layer--reality {
+    --reveal: 0%;
+    -webkit-mask-image: radial-gradient(circle, #000 0%, #000 66%, transparent 100%);
+    mask-image: radial-gradient(circle, #000 0%, #000 66%, transparent 100%);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: 50% 50%;
+    mask-position: 50% 50%;
+    -webkit-mask-size: var(--reveal) var(--reveal);
+    mask-size: var(--reveal) var(--reveal);
+
+    /* Isolate the layer so its per-frame mask repaint is confined here and can't
+       invalidate the stage / page. `will-change: transform` (a real compositable
+       property) promotes it; `contain: paint` bounds the invalidation region. */
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    contain: paint;
+  }
+
+  /* Move the captions to the TOP of the stage: at the bottom they sit exactly
+     under the scrolling thumb during the reveal. Up top they stay legible and
+     uncovered. */
+  .atelier__caption {
+    top: clamp(1rem, 4vw, 1.5rem);
+    bottom: auto;
+    left: clamp(1rem, 4vw, 1.5rem);
+  }
+
+  /* Re-aim the readability scrim to the top to match the relocated captions. */
+  .atelier__stage::after {
+    inset: 0 0 auto 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(8, 18, 32, 0.55) 0%,
+      rgba(8, 18, 32, 0.22) 45%,
+      transparent 100%
+    );
+  }
+}
+
+/* --- Fine-tuning for true phone widths ------------------------------------
+   At ~480px and below, tighten spacing and dial the type one notch smaller so
+   the section feels purpose-built for the handset rather than a shrunk desktop. */
+@media (max-width: 480px) {
+  .atelier {
+    padding-block: clamp(3.75rem, 10vh, 5.5rem);
+    padding-inline: 1.75rem; /* steady editorial gutter, no awkward squeeze */
+  }
+
+  .atelier__eyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 0.34em; /* relax tracking so the kanji + caps don't crowd */
+  }
+
+  .atelier__title {
+    font-size: clamp(2rem, 11vw, 2.65rem);
+  }
+
+  .atelier__lead {
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  .atelier__caption {
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+  }
+}
+
+/* Belt-and-braces: with reduced motion, show the finished pond fully revealed,
+   the overlay fully drawn and the right caption visible (GSAP also sets these in
+   JS, but this guarantees a correct still state even before/without the script). */
+@media (prefers-reduced-motion: reduce) {
+  .atelier__layer--reality {
+    --reveal: 160%;
+    will-change: auto;
+  }
+
+  .atelier__draw {
+    stroke-dashoffset: 0;
+  }
+
+  .atelier__caption--plan {
+    opacity: 0;
+  }
+
+  .atelier__caption--real {
+    opacity: 1;
+  }
+
+  .atelier [data-ink] {
+    opacity: 1;
+    filter: none;
+  }
+}

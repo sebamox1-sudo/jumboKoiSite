@@ -1,0 +1,64 @@
+/* ============================================================================
+   Preloader — the "sipario" (curtain)
+   A silent black ground with a single gold ring that inks itself in while the
+   heavy assets load, then blooms and dissolves to reveal the site.
+   ========================================================================== */
+
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  /* Deepest ground so the gold ink reads as light on the void. */
+  background-color: var(--color-bg);
+  /* The ground itself never receives pointer/scroll while up. */
+  touch-action: none;
+}
+
+/* Wrapper that GSAP breathes (and later blooms). Separated from `.preloader`
+   so the exit bloom scales the ring without scaling the full-screen ground. */
+.preloader__mark {
+  display: grid;
+  place-items: center;
+  width: clamp(96px, 22vmin, 160px);
+  height: clamp(96px, 22vmin, 160px);
+  will-change: transform, opacity;
+}
+
+.preloader__ring {
+  width: 100%;
+  height: 100%;
+  /* Draw the arc from the top, like a rising sun closing its circle. */
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+/* The void guide — barely-there full ring the gold ink delineates over. */
+.preloader__track {
+  fill: none;
+  stroke: var(--color-ink);
+  stroke-width: 1.25;
+  opacity: 0.08;
+}
+
+/* The gold progress arc — soft, ink-like, rounded ends. */
+.preloader__arc {
+  fill: none;
+  stroke: var(--color-gold);
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  /* A whisper of glow so it reads as luminous ink, not a UI spinner. */
+  filter: drop-shadow(0 0 6px rgba(200, 168, 107, 0.35));
+}
+
+/* Reduced motion: App skips the curtain entirely, but guard the ring just in
+   case it ever renders — no breathing, instantly closed. */
+@media (prefers-reduced-motion: reduce) {
+  .preloader__mark {
+    transform: none !important;
+  }
+  .preloader__arc {
+    stroke-dashoffset: 0 !important;
+  }
+}

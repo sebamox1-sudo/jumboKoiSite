@@ -1,0 +1,188 @@
+/* ============================================================================
+   Philosophy — "Il Tempo dell'Acqua"
+   The site's exhale: the dark sumi-e Collection gives way to a warm washi-paper
+   light. An asymmetric editorial composition — text adrift in whitespace on the
+   left, a large stone basin to the right with a smaller raked-gravel plate
+   breaking out of its corner. Colour, parallax and the ink-blur reveal are all
+   driven from Philosophy.jsx; the palette comes from the global tokens.
+   ========================================================================== */
+
+.philosophy {
+  position: relative;
+  z-index: 3; /* paints OVER .collection (z-index: 2) as it rises into view */
+  isolation: isolate;
+
+  /* JS scrubs this from --color-bg → --color-paper. The static value here is the
+     destination, so reduced-motion / no-JS visitors get the paper ground at once
+     and never see a flash of the dark start colour. */
+  background-color: var(--color-paper);
+  color: var(--color-sumi);
+
+  /* Mirror the Collection's "3D Awwwards" lift: a curved top edge and a soft
+     shadow so this light panel reads as a separate sheet sliding up over the
+     dark section beneath it. */
+  border-top-left-radius: 40px;
+  border-top-right-radius: 40px;
+  box-shadow: 0 -40px 100px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  /* Generous vertical breathing room — the whole point of the section. */
+  padding-block: clamp(7rem, 22vh, 18rem);
+  padding-inline: clamp(1.5rem, 8vw, 9rem);
+  overflow: hidden; /* contain the radius + any parallax that grazes the edge */
+}
+
+/* --- Asymmetric composition ------------------------------------------------
+   A 12-column grid, deliberately unbalanced: the text occupies the left third
+   and is pushed DOWN (align-self:end) while the media floats UP and right. Wide
+   column-gap keeps the two masses from ever touching. */
+.philosophy__inner {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  align-items: center;
+  column-gap: clamp(2rem, 6vw, 7rem);
+  max-width: 1500px;
+  margin-inline: auto;
+}
+
+/* --- Text column ----------------------------------------------------------- */
+.philosophy__text {
+  grid-column: 1 / 6;
+  align-self: end; /* sink the words — asymmetry on the vertical axis too */
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 3.5vh, 2.75rem);
+  /* `data-ink` elements start blurred & transparent (set by GSAP). A reduced-
+     motion visitor never runs that tween, hence the CSS-visible defaults above. */
+}
+
+.philosophy__eyebrow {
+  font-family: var(--font-sans);
+  font-size: clamp(0.66rem, 1vw, 0.78rem);
+  font-weight: 400;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.philosophy__title {
+  /* The "serif/mincho" headline — Syne is the project's display face. A CJK
+     mincho stack is named first so the 和 elsewhere and this title share a calm,
+     brushed character where the font exists. */
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(2.75rem, 7vw, 6rem);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  color: var(--color-sumi);
+}
+
+.philosophy__lead {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.05rem, 1.7vw, 1.4rem);
+  line-height: 1.65;
+  color: var(--color-sumi-soft);
+  max-width: 38ch;
+}
+
+/* --- Media column ----------------------------------------------------------
+   Relative anchor: the main image is in flow, the sub plate is absolutely
+   positioned so it can spill out of the lower-left corner into the text's
+   whitespace. Nudged up to sit higher than the sunk text block. */
+.philosophy__media {
+  grid-column: 7 / 13;
+  position: relative;
+  align-self: start;
+  margin-top: clamp(-4rem, -6vh, -1rem);
+}
+
+/* Shared frame for both stones: clip the slow parallax, square-ish soft corners,
+   a stone-coloured ground so a not-yet-added image degrades to a calm block
+   rather than a broken-image icon. */
+.philosophy__media-main,
+.philosophy__media-sub {
+  position: relative;
+  overflow: hidden; /* the parallax clip — images move INSIDE this frame */
+  margin: 0;
+  border-radius: 6px;
+  background-color: var(--color-paper-deep);
+  box-shadow: 0 40px 80px -30px rgba(38, 34, 29, 0.4);
+}
+
+/* Large, hero-style portrait — tall and offset to the right of the column. */
+.philosophy__media-main {
+  width: 78%;
+  margin-left: auto; /* push it to the right edge → asymmetry */
+  aspect-ratio: 4 / 5;
+}
+
+/* Smaller plate, overlapping the main image's lower-left and breaking out past
+   the column edge into the whitespace between the two masses. */
+.philosophy__media-sub {
+  position: absolute;
+  left: -8%;
+  bottom: -12%;
+  width: 46%;
+  aspect-ratio: 1 / 1;
+  border: 6px solid var(--color-paper); /* paper mat — lifts it off the main image */
+}
+
+/* The photographs themselves. Pre-scaled to 1.1 and translated on Y by GSAP, so
+   they must fully cover their clipped frame at every point of the drift. */
+.philosophy__media-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  user-select: none;
+  will-change: transform; /* GSAP owns transform — leave it untouched in CSS */
+}
+
+/* --- Responsive ------------------------------------------------------------
+   Below the editorial breakpoint the asymmetric grid collapses to a single
+   stacked column: text first, then the media pair, still slightly offset. */
+@media (max-width: 900px) {
+  .philosophy__inner {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(3.5rem, 12vw, 6rem);
+  }
+
+  .philosophy__text {
+    align-self: stretch;
+  }
+
+  .philosophy__media {
+    margin-top: 0;
+    align-self: stretch;
+    /* extra bottom room so the breaking-out sub plate isn't clipped by the flow */
+    padding-bottom: clamp(3rem, 14vw, 6rem);
+  }
+
+  .philosophy__media-main {
+    width: 88%;
+    margin-left: 0;
+  }
+
+  .philosophy__media-sub {
+    width: 50%;
+    left: auto;
+    right: -4%;
+    bottom: 0;
+  }
+}
+
+/* Belt-and-braces: if the OS asks for reduced motion, make sure nothing is left
+   mid-blur and the transform hints are dropped (GSAP also resolves these in JS). */
+@media (prefers-reduced-motion: reduce) {
+  .philosophy__media-img {
+    will-change: auto;
+  }
+
+  .philosophy [data-ink] {
+    opacity: 1;
+    filter: none;
+  }
+}

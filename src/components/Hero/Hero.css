@@ -1,0 +1,386 @@
+/* ============================================================================
+   Hero — jumboKoi
+   A full-viewport, layered, cinematic header driven by a scroll-scrubbed frame
+   sequence. The koi stills are now bright (ivory / pale grey), so the hero reads
+   as a *light* island inside the dark page: ink flips to near-black and a frosted
+   "liquid glass" card layer floats over the scene. Global tokens live in index.css.
+   ========================================================================== */
+
+.hero {
+  position: relative;
+  width: 100%;
+  z-index: 1; /* paints BELOW .collection (z-index: 2) so it can be covered */
+  --hero-ink: var(--color-bg-deep);
+  --hero-ink-soft: rgba(10, 10, 8, 0.64);
+  --hero-gold: #8a6c34;
+  --hero-surface: #e9e6df;
+
+  /* Number of extra screens of scrubbing on top of the first viewport.
+     Stuck travel = --hero-track screens; keep the Collection's pull-up
+     (margin-top: -100svh) equal to ONE screen of this track. */
+  --hero-track: 3;
+
+  /* Default (and reduced-motion) height: a single static screen. */
+  height: 100svh;
+
+  /* The "void" behind the scene is the page's near-black. */
+  background-color: var(--color-bg);
+  isolation: isolate;
+}
+
+/* Only when motion is allowed does the hero become a tall scroll track. The JS
+   scrub lives behind the same `prefers-reduced-motion` gate, so layout and
+   animation always agree. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero {
+    height: calc((1 + var(--hero-track)) * 100svh);
+  }
+}
+
+/* The element actually held in the viewport — by pure CSS, no GSAP pin.
+   It stays stuck for (height - 100svh) of scroll = --hero-track screens. */
+.hero__sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  min-height: 600px;
+  overflow: hidden; /* frames the scene + clips the shrinking stage */
+  /* Revealed margin behind the pushed-back stage = the page void, so the
+     hero and the incoming Collection share one seamless dark ground. */
+  background-color: var(--color-bg);
+}
+
+.hero__stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* so the animated border-radius actually clips the canvas */
+
+  /* The light scene lives here, inside the dark frame. */
+  background-color: var(--hero-surface);
+  transform-origin: center bottom; /* shrinks toward the bottom as it sinks */
+  will-change: transform, filter, border-radius;
+}
+
+.hero__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  display: block;
+  background-color: var(--hero-surface);
+  will-change: transform;
+}
+
+.hero__glass {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.hero__glass-card {
+  position: absolute;
+  width: clamp(240px, 23vw, 330px);
+  padding: clamp(1.35rem, 1.9vw, 1.9rem) clamp(1.5rem, 2vw, 2.15rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  background: rgba(255, 255, 255, 0.45);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 18px;
+  box-shadow:
+    0 30px 80px -34px rgba(18, 22, 25, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  opacity: 0;
+  visibility: hidden;
+  will-change: transform, opacity;
+}
+
+.hero__glass-card--one { top: 13%; left: clamp(1.5rem, 6vw, 6rem); }
+.hero__glass-card--two { top: 41%; right: clamp(1.5rem, 5vw, 6.5rem); }
+.hero__glass-card--three { bottom: 12%; left: clamp(3rem, 13vw, 13rem); }
+
+.hero__glass-kicker {
+  font-family: var(--font-sans);
+  font-size: clamp(0.58rem, 0.8vw, 0.68rem);
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--hero-gold);
+}
+
+.hero__glass-title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(1.15rem, 1.7vw, 1.5rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: var(--hero-ink);
+}
+
+.hero__glass-text {
+  font-family: var(--font-sans);
+  font-size: clamp(0.84rem, 1vw, 0.95rem);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--hero-ink-soft);
+}
+
+.hero__topbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(1.25rem, 3vw, 2.25rem) clamp(1.25rem, 4vw, 3.25rem);
+}
+
+.hero__brand {
+  font-family: var(--font-serif);
+  font-size: clamp(1.15rem, 1.8vw, 1.5rem);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--hero-ink);
+}
+
+.hero__meta {
+  font-family: var(--font-sans);
+  font-size: clamp(0.62rem, 0.9vw, 0.72rem);
+  font-weight: 400;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--hero-ink-soft);
+}
+
+.hero__content {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+  padding: 0 clamp(1.5rem, 6vw, 3rem) 0 clamp(1.5rem, 5vw, 5rem);
+}
+
+.hero__content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    rgba(233, 230, 223, 0.82) 0%,
+    rgba(233, 230, 223, 0.32) 38%,
+    rgba(233, 230, 223, 0) 64%
+  );
+}
+
+.hero__eyebrow {
+  font-family: var(--font-sans);
+  font-size: clamp(0.66rem, 1vw, 0.78rem);
+  font-weight: 400;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--hero-gold);
+  margin-bottom: clamp(1rem, 2.4vw, 1.75rem);
+}
+
+.hero__title {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(3rem, 9vw, 8.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.015em;
+  color: var(--hero-ink);
+  margin: 0;
+}
+
+.hero__subtitle {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(1.05rem, 2.6vw, 1.85rem);
+  line-height: 1.5;
+  letter-spacing: 0.005em;
+  color: var(--hero-ink-soft);
+  max-width: 30ch;
+  margin: clamp(1.25rem, 3vw, 2rem) 0 0;
+}
+
+.split { display: inline; }
+.mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+.mask__inner { display: inline-block; will-change: transform; }
+
+.hero__cue {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: clamp(1.75rem, 4vh, 3rem);
+}
+
+.hero__cue-line {
+  width: 1px;
+  height: clamp(28px, 4vh, 46px);
+  background: linear-gradient(to bottom, transparent, var(--hero-ink-soft) 40%, transparent);
+  animation: cue-drip 3.4s ease-in-out infinite;
+  transform-origin: top;
+}
+
+.hero__cue-label {
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--hero-ink-soft);
+}
+
+@keyframes cue-drip {
+  0%, 100% { transform: scaleY(0.4); opacity: 0.35; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+
+/* ============================================================================
+   MOBILE  —  "Editorial cover" redesign  (≤ 768px)
+   ----------------------------------------------------------------------------
+   Philosophy: on a phone the koi own the upper two-thirds of the screen as a
+   living backdrop, and the type is anchored to the bottom ~40% like the cover
+   of a luxury magazine. Desktop is left completely untouched. Only the
+   *positioning / sizing* of .hero__stage children is changed here — every
+   GSAP animation (frame scrub, fade-out, glass-card drift, 3D push-back) is
+   transform/filter/opacity based, so nothing in the JS is affected.
+   NB: the scene is LIGHT (ivory koi) with near-black ink, so the readability
+   veil is an *ivory* gradient rising from the bottom — not black, which would
+   fight the dark type.
+   ========================================================================== */
+@media (max-width: 768px) {
+
+  /* Full-bleed light scene: koi fill the whole viewport as the backdrop. */
+  .hero__stage {
+    aspect-ratio: auto; /* was 9/16 (dead under height:100%); keep it immersive */
+  }
+
+  /* ---- Topbar: stripped back to a single top-left wordmark ---- */
+  .hero__topbar {
+    justify-content: flex-start;
+    padding: clamp(1.1rem, 5vw, 1.6rem) clamp(1.35rem, 6vw, 1.8rem);
+  }
+
+  .hero__brand {
+    font-size: 1.18rem;
+    letter-spacing: 0.02em;
+  }
+
+  .hero__meta {
+    display: none; /* non-essential metadata removed on mobile */
+  }
+
+  /* ---- Content: anchor the whole type block to the bottom of the screen ---- */
+  .hero__content {
+    justify-content: flex-end; /* immersive: text sits in the lower band */
+    align-items: flex-start;   /* editorial, left-aligned */
+    text-align: left;
+    padding: 0 clamp(1.5rem, 7vw, 2.25rem) clamp(2.75rem, 9vh, 4.25rem);
+  }
+
+  /* Ivory veil that rises from the bottom: the top ~⅓ stays clear for the koi,
+     the lower band turns into a clean ground that lifts the dark ink. */
+  .hero__content::before {
+    background: linear-gradient(
+      to top,
+      rgba(233, 230, 223, 0.97) 0%,
+      rgba(233, 230, 223, 0.9) 26%,
+      rgba(233, 230, 223, 0.5) 46%,
+      rgba(233, 230, 223, 0) 66%
+    );
+  }
+
+  /* Eyebrow — slightly tighter tracking so it never wraps on narrow screens. */
+  .hero__eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    margin-bottom: clamp(0.85rem, 3vw, 1.25rem);
+  }
+
+  /* Title — fluid & dominant. Size alone carries the hierarchy. */
+  .hero__title {
+    font-size: clamp(4rem, 19vw, 5.5rem);
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+  }
+
+  /* Subtitle — confident, readable italic serif on a comfortable measure. */
+  .hero__subtitle {
+    font-size: clamp(1.15rem, 4.6vw, 1.5rem);
+    line-height: 1.45;
+    max-width: 24ch;
+    margin-top: clamp(1rem, 3.5vw, 1.5rem);
+  }
+
+  /* Soft ivory halo keeps every line crisp even when a dark koi drifts behind. */
+  .hero__eyebrow,
+  .hero__title,
+  .hero__subtitle,
+  .hero__cue-label {
+    text-shadow: 0 1px 22px rgba(233, 230, 223, 0.7);
+  }
+
+  /* Scroll cue sits last, just beneath the type — present, never in the way. */
+  .hero__cue {
+    margin-top: clamp(1.4rem, 4.5vw, 2rem);
+  }
+
+  /* ---- Glass cards (appear later, on scroll): full-width, tidy, stacked ---- */
+  .hero__glass-card {
+    width: min(80vw, 340px);
+    padding: 1.35rem 1.5rem;
+  }
+  .hero__glass-card--one   { top: 9%;    left: clamp(1.25rem, 6vw, 2rem); right: auto; }
+  .hero__glass-card--two   { top: 40%;   right: clamp(1.25rem, 6vw, 2rem); left: auto; }
+  .hero__glass-card--three { bottom: 9%; left: clamp(1.25rem, 6vw, 2rem); right: auto; }
+}
+
+/* Landscape phones (short viewport): shrink the title and tighten the veil so
+   the bottom-anchored block always fits without crowding. */
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 520px) {
+  .hero__content {
+    padding-bottom: clamp(1.25rem, 6vh, 2rem);
+  }
+  .hero__title {
+    font-size: clamp(2.5rem, 9vh, 3.75rem);
+  }
+  .hero__subtitle {
+    max-width: 40ch;
+    margin-top: 0.75rem;
+  }
+  .hero__content::before {
+    background: linear-gradient(
+      to top,
+      rgba(233, 230, 223, 0.97) 0%,
+      rgba(233, 230, 223, 0.6) 50%,
+      rgba(233, 230, 223, 0) 78%
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mask__inner { transform: none; }
+  .hero__cue-line { animation: none; }
+  .hero__glass-card { will-change: auto; }
+}

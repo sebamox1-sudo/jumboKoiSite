@@ -1,0 +1,160 @@
+/* ============================================================================
+   Footer — the slow exhale into the dark
+   Shares Bespoke's nocturnal ink ground for an invisible transition: no seam, no
+   colour break — just sliding to the bottom of the page. Sumi-e minimalism: big
+   serif logo, generous negative space, one hairline divider, the dev signature.
+   ========================================================================== */
+
+.footer {
+  position: relative;
+  /* EXACTLY Bespoke's --bespoke-ink so the join is seamless (that token is scoped
+     to .bespoke, so the value is restated here on purpose). */
+  background-color: #12100f;
+  color: var(--color-ink);
+  padding-block: clamp(5rem, 14vh, 10rem) clamp(2rem, 5vh, 3rem);
+  padding-inline: clamp(1.5rem, 8vw, 9rem);
+}
+
+.footer__inner {
+  max-width: 1500px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(4rem, 12vh, 9rem);
+}
+
+/* --- Main area ------------------------------------------------------------- */
+.footer__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: clamp(2.5rem, 8vw, 7rem);
+  flex-wrap: wrap;
+}
+
+.footer__brand {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 2vw, 1.25rem);
+}
+
+.footer__logo {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(3rem, 9vw, 7rem);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+
+.footer__tagline {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(1rem, 1.8vw, 1.4rem);
+  letter-spacing: 0.005em;
+  color: var(--color-ink-soft);
+}
+
+/* --- Navigation grid ------------------------------------------------------- */
+.footer__nav {
+  display: flex;
+  gap: clamp(3rem, 8vw, 7rem);
+}
+
+.footer__col {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+.footer__col-title {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.footer__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.footer__link {
+  font-family: var(--font-sans);
+  font-size: clamp(0.9rem, 1.1vw, 1rem);
+  color: var(--color-ink-soft);
+  transition: color 0.35s ease;
+}
+
+.footer__link:hover {
+  color: var(--color-ink);
+}
+
+.footer__link:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* --- Copyright area -------------------------------------------------------- */
+.footer__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-top: clamp(1.5rem, 4vh, 2.5rem);
+  /* The single, whisper-thin divider asked for. */
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer__copy,
+.footer__signature {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  /* Very faint grey — present, never loud. */
+  color: rgba(236, 231, 221, 0.4);
+}
+
+/* The developer signature link — tenue by default, glows gold on hover. */
+.footer__signature-link {
+  color: var(--color-ink-soft);
+  text-decoration: none;
+  transition: color 0.35s ease;
+}
+
+.footer__signature-link:hover {
+  color: var(--color-gold);
+}
+
+.footer__signature-link:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* --- Responsive: one elegant stacked column ------------------------------- */
+@media (max-width: 760px) {
+  .footer__top {
+    flex-direction: column;
+    gap: clamp(3rem, 11vw, 4.5rem);
+  }
+
+  .footer__nav {
+    gap: clamp(2.5rem, 14vw, 4rem);
+  }
+
+  /* Copyright + signature stack and centre, per spec. */
+  .footer__bottom {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.1rem;
+  }
+}
