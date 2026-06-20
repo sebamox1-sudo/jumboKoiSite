@@ -52,5 +52,5 @@ export function getFrameIndices(isMobile) {
  */
 export const frameUrl = (i, isMobile) => {
   const folder = isMobile ? 'camera-frames-mobile' : 'camera-frames-desktop'
-  return `${import.meta.env.BASE_URL}${folder}/ezgif-frame-${String(i + 1).padStart(3, '0')}.webp`
+  return `${import.meta.env.BASE_URL}${folder}/ezgif-frame-${String(i + 1).padStart(3, '0')}.avif`
 }
