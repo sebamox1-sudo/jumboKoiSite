@@ -1,0 +1,392 @@
+/* ============================================================================
+   Storia — "Due Secoli di Gioielli Viventi"
+   A night-lit museum exhibition: a single immersive VERTICAL descent through 200
+   years (no horizontal scroll). Deep sumi-e ground, gold placards, massive serif
+   display type, heavy macro-whitespace. Double-Bezel plates cradle every image;
+   each plate's photo parallaxes inside its clipped wrap (motion in Storia.jsx).
+   All colour/type from the global tokens in index.css.
+   ========================================================================== */
+
+.storia {
+  position: relative;
+  display: block;
+  background-color: var(--color-bg-deep);
+  /* Two faint warm orbs in the void — depth without literal imagery. */
+  background-image:
+    radial-gradient(60% 50% at 82% 8%, rgba(200, 168, 107, 0.08), transparent 70%),
+    radial-gradient(50% 50% at 8% 88%, rgba(200, 168, 107, 0.05), transparent 70%);
+  color: var(--color-ink);
+  overflow: hidden; /* contain the bleeding plates + parallax */
+}
+
+/* Fixed film-grain + vignette. pointer-events-none so it never blocks; fixed so
+   it costs no repaint on the scrolling content (performance guardrail). */
+.storia__grain {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image:
+    radial-gradient(120% 120% at 50% 50%, transparent 58%, rgba(0, 0, 0, 0.55) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+}
+
+/* Shared eyebrow — the microscopic gold tag that precedes every display heading. */
+.storia__eyebrow,
+.storia__chapter-kicker,
+.storia__closing-kicker {
+  font-family: var(--font-sans);
+  font-size: clamp(0.64rem, 0.9vw, 0.76rem);
+  font-weight: 400;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+/* ── HERO ──────────────────────────────────────────────────────────────────
+   Editorial Split: the typographic block on the left, the large plate on the
+   right, the whole act at least one full (dynamic) viewport tall. */
+.storia__hero {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  align-items: center;
+  gap: clamp(2rem, 6vw, 6rem);
+  min-height: 100dvh;
+  padding: clamp(7rem, 14vh, 11rem) clamp(1.5rem, 7vw, 8rem) clamp(5rem, 10vh, 8rem);
+}
+
+.storia__hero-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(1.4rem, 2.6vw, 2.1rem);
+}
+
+.storia__back {
+  margin-bottom: clamp(0.5rem, 1.5vw, 1rem);
+}
+
+.storia__title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(2.9rem, 7.5vw, 6.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+
+.storia__title em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--color-gold);
+}
+
+.storia__lead {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(1.1rem, 1.8vw, 1.55rem);
+  line-height: 1.55;
+  color: var(--color-ink-soft);
+  max-width: 44ch;
+}
+
+.storia__scroll-cue {
+  margin-top: clamp(0.5rem, 2vw, 1.5rem);
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+}
+
+.storia__hero-media {
+  position: relative;
+  height: clamp(420px, 70vh, 760px);
+}
+
+/* ── DOUBLE-BEZEL PLATE (outer shell ⊃ clipped image core) ─────────────────── */
+.storia__plate {
+  position: relative;
+  height: 100%;
+  padding: 8px; /* the bezel gap */
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 60px 130px -60px rgba(0, 0, 0, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.storia__plate--hero {
+  height: 100%;
+}
+
+/* The clipping core — concentric radius (26 − 8), holds the parallax overflow.
+   This is the exact `<div class="storia__image-wrap"><img/></div>` structure. */
+.storia__image-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 18px;
+  /* Warm sumi gradient — the plate still reads as intentional if an image is
+     missing, and gives transparent cut-out koi an inky ground to float on. */
+  background: linear-gradient(140deg, #15110c 0%, #0b0a08 100%);
+  isolation: isolate;
+}
+
+/* Plates that are sized by their cell rather than a fixed hero height. */
+.storia__plate--fill,
+.storia__plate--fill .storia__image-wrap {
+  height: 100%;
+}
+
+.storia__image-wrap img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  display: block;
+  will-change: transform; /* GSAP owns the parallax transform */
+}
+
+/* Museum placard — a small gold-lettered pill in the plate's lower-left. Solid
+   ground (never backdrop-blur on a scrolling layer). */
+.storia__plate-label {
+  position: absolute;
+  left: clamp(0.75rem, 1.5vw, 1.1rem);
+  bottom: clamp(0.75rem, 1.5vw, 1.1rem);
+  z-index: 2;
+  margin: 0;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 7, 6, 0.55);
+  font-family: var(--font-sans);
+  font-size: clamp(0.58rem, 0.8vw, 0.68rem);
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+
+/* ── CHAPTERS (Editorial Split, alternating sides) ─────────────────────────── */
+.storia__chapters {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(7rem, 16vh, 16rem);
+  padding: clamp(6rem, 14vh, 14rem) clamp(1.5rem, 7vw, 8rem);
+}
+
+.storia__chapter {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: clamp(2.5rem, 7vw, 7rem);
+}
+
+/* Media on the right by default; `--media-left` swaps the order. */
+.storia__chapter--media-right .storia__chapter-media {
+  order: 2;
+}
+
+.storia__chapter-media {
+  position: relative;
+  height: clamp(360px, 56vh, 620px);
+}
+
+.storia__chapter-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.storia__chapter-index {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1;
+  color: rgba(200, 168, 107, 0.4);
+}
+
+.storia__chapter-title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(2rem, 4.2vw, 3.4rem);
+  line-height: 1.04;
+  letter-spacing: -0.015em;
+  color: var(--color-ink);
+}
+
+.storia__chapter-body {
+  font-family: var(--font-sans);
+  font-size: clamp(0.98rem, 1.2vw, 1.12rem);
+  line-height: 1.75;
+  color: var(--color-ink-soft);
+  max-width: 46ch;
+}
+
+/* ── GALLERY (Asymmetrical Bento) ──────────────────────────────────────────── */
+.storia__gallery {
+  position: relative;
+  z-index: 1;
+  padding: clamp(4rem, 10vh, 9rem) clamp(1.5rem, 7vw, 8rem) clamp(6rem, 14vh, 12rem);
+}
+
+.storia__gallery-head {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.9rem, 2vw, 1.4rem);
+  margin-bottom: clamp(2.5rem, 6vw, 5rem);
+  max-width: 30ch;
+}
+
+.storia__gallery-title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(1.9rem, 4vw, 3.2rem);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: var(--color-ink);
+}
+
+.storia__bento {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-auto-rows: clamp(220px, 28vw, 420px);
+  grid-auto-flow: dense;
+  gap: clamp(0.9rem, 1.8vw, 1.5rem);
+}
+
+.storia__bento-cell {
+  margin: 0;
+  min-width: 0;
+}
+
+/* Each cell's plate fills its grid footprint. */
+.storia__bento-cell .storia__plate {
+  height: 100%;
+}
+
+.storia__bento-cell--wide {
+  grid-column: span 4;
+}
+.storia__bento-cell--tall {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+.storia__bento-cell--std {
+  grid-column: span 2;
+}
+
+/* Rimuovi il nero e il padding per far esplodere la carta fino ai bordi */
+.storia__bento-cell .storia__image-wrap {
+  background-color: transparent !important;
+  padding: 0 !important; 
+}
+
+.storia__bento-cell .storia__image-wrap img {
+  object-fit: cover !important; 
+  object-position: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── CLOSING ───────────────────────────────────────────────────────────────── */
+.storia__closing {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  padding: clamp(6rem, 16vh, 14rem) clamp(1.5rem, 7vw, 8rem) clamp(8rem, 18vh, 16rem);
+}
+
+.storia__closing-title {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  color: var(--color-ink);
+}
+
+.storia__closing-actions {
+  margin-top: clamp(0.5rem, 2vw, 1.5rem);
+}
+
+/* ── RESPONSIVE: collapse to a single immersive column ─────────────────────── */
+@media (max-width: 860px) {
+  .storia__hero {
+    grid-template-columns: 1fr;
+    gap: clamp(2.5rem, 8vw, 4rem);
+    min-height: auto;
+    padding-top: clamp(6rem, 16vh, 9rem);
+  }
+
+  .storia__hero-media {
+    height: clamp(360px, 64vh, 560px);
+  }
+
+  .storia__chapter {
+    grid-template-columns: 1fr;
+    gap: clamp(1.75rem, 7vw, 2.75rem);
+  }
+
+  /* Image always leads the text on a phone, regardless of desktop side. */
+  .storia__chapter--media-right .storia__chapter-media {
+    order: 0;
+  }
+
+  .storia__chapter-media {
+    height: clamp(300px, 70vw, 460px);
+  }
+
+  /* Bento → Adattiamo l'altezza delle celle in base all'orientamento del pesce */
+  .storia__bento {
+    grid-template-columns: 1fr;
+    grid-auto-rows: clamp(180px, 45vw, 260px); /* Riga base leggermente più bassa */
+  }
+  .storia__bento-cell--wide {
+    grid-column: span 1;
+    grid-row: span 1; /* Cella orizzontale: perfetta per Kohaku e Yamabuki */
+  }
+  
+  .storia__bento-cell--tall,
+  .storia__bento-cell--std {
+    grid-column: span 1;
+    grid-row: span 2; /* Cella verticale: alta il doppio! Le carpe in 3:4 entrano perfette */
+  }
+}
+
+@media (max-width: 480px) {
+  .storia__hero,
+  .storia__chapters,
+  .storia__gallery,
+  .storia__closing {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+}
+
+/* ── Reduced motion: release the compositor hints; layout is already final. ─── */
+@media (prefers-reduced-motion: reduce) {
+  .storia__image-wrap img {
+    will-change: auto;
+  }
+  .storia__grain {
+    display: none;
+  }
+}

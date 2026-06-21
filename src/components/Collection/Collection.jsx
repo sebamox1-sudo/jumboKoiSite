@@ -3,6 +3,8 @@ import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { prefersReducedMotion } from '../../utils/animations'
+import { useTransitionNavigate } from '../../transitions/transitionContext'
+import BezelButton from '../ui/BezelButton'
 import './Collection.css'
 
 // ScrollTrigger drives the pin; registering here keeps the component self-contained.
@@ -103,6 +105,9 @@ export default function Collection() {
   const root = useRef(null)
   const wrapperRef = useRef(null)
   const trackRef = useRef(null)
+
+  // Route into the 200-year history through the cinematic "void" transition.
+  const navigate = useTransitionNavigate()
 
   useGSAP(
     () => {
@@ -217,6 +222,25 @@ export default function Collection() {
               </span>
             </article>
           ))}
+
+          {/* Closing slot — the invitation the horizontal scroll finally delivers.
+              A placard floating in the same void as the koi: an eyebrow, the
+              machined Double-Bezel CTA, and a whispered subtitle. Clicking it does
+              NOT jump routes — it plays the exit timeline and sinks the page into
+              the void before /storia is reached (see useTransitionNavigate). */}
+          <div className="collection__cta-slot">
+            <span className="collection__cta-kicker">二百年 · DAL 1820</span>
+            <BezelButton
+              label="Scopri la Storia"
+              arrow="up-right"
+              tone="gold"
+              onClick={() => navigate('/storia')}
+              ariaLabel="Scopri la storia dei Nishikigoi"
+            />
+            <span className="collection__cta-note">
+              Due secoli di Nishikigoi, dalle risaie di Niigata a oggi.
+            </span>
+          </div>
         </div>
       </div>
     </section>

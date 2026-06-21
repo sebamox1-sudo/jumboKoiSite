@@ -212,6 +212,40 @@
   color: var(--color-ink-soft);
 }
 
+/* --- Closing CTA slot (the last item the horizontal track delivers) ---------
+   A placard floating in the same void as the koi: eyebrow ▸ Double-Bezel CTA ▸
+   subtitle, vertically centred so it lands on the same optical line as the fish. */
+.collection__cta-slot {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: clamp(1.25rem, 2.6vw, 1.9rem);
+  width: clamp(280px, 32vw, 420px);
+  height: 100%;
+  padding-inline: clamp(1rem, 2vw, 2rem);
+}
+
+.collection__cta-kicker {
+  font-family: var(--font-sans);
+  font-size: clamp(0.62rem, 0.9vw, 0.74rem);
+  font-weight: 400;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.collection__cta-note {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(0.98rem, 1.4vw, 1.2rem);
+  line-height: 1.5;
+  color: var(--color-ink-soft);
+  max-width: 26ch;
+}
+
 /* --- Reduced-motion / no-JS fallback --------------------------------------
    No pin, no scrub: a plain natively-scrollable strip with snap points. The
    fish rest centred (transform untouched), so nothing looks broken. */

@@ -1,0 +1,41 @@
+/* ============================================================================
+   Page transitions — the "void"
+   One fixed sheet of absolute dark (#0a0908), mounted once above every route by
+   TransitionProvider. GSAP fades + blurs it in to swallow the outgoing page, then
+   fades it out so the incoming page emerges. It is the only blurred surface in the
+   app, and it is fixed — honouring the guardrail that backdrop-blur belongs only
+   to fixed/sticky layers, never to scrolling content.
+   ========================================================================== */
+
+.transition-void {
+  position: fixed;
+  inset: 0;
+  /* The absolute dark void specified for the sink. Slightly warmer than pure
+     black so it reads as ink, not a switched-off screen. */
+  background-color: #0a0908;
+
+  /* Born invisible and inert. GSAP (autoAlpha) owns visibility + opacity; it
+     flips pointer-events to 'auto' only while the gesture is in flight so the
+     dark sheet swallows stray clicks on the page beneath, then back to 'none'. */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  /* Sits above every section but below the liquid-silk cursor (max z-index) and
+     the first-load preloader curtain (9999) — neither ever co-exists with it. */
+  z-index: 9000;
+
+  /* These two are animated every frame of the gesture; hint the compositor. */
+  will-change: opacity, transform;
+  transform: translateZ(0);
+}
+
+/* Touch devices run no Lenis, so there is no `lenis.stop()` to freeze the scroll
+   during the ~0.8s gesture. Lock the native scroll instead — scoped to coarse
+   pointers so the desktop scrollbar (and its layout width) is never touched. */
+@media (pointer: coarse) {
+  html.is-transitioning {
+    overflow: hidden;
+    touch-action: none;
+  }
+}
