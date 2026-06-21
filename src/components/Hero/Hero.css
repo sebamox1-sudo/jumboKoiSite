@@ -12,7 +12,7 @@
   z-index: 1; /* paints BELOW .collection (z-index: 2) so it can be covered */
   --hero-ink: var(--color-bg-deep);
   --hero-ink-soft: rgba(10, 10, 8, 0.64);
-  --hero-gold: #8a6c34;
+  --hero-gold: #C5A643;
   --hero-surface: #e9e6df;
 
   /* Number of extra screens of scrubbing on top of the first viewport.
@@ -155,7 +155,7 @@
   font-weight: 400;
   letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: var(--hero-ink-soft);
+  color: var(--hero-gold);
 }
 
 .hero__content {
