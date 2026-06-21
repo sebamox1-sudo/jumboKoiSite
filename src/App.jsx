@@ -15,7 +15,7 @@ import Footer from './components/Footer/Footer'
 import CustomCursor from './components/CustomCursor/CustomCursor'
 import { prefersReducedMotion } from './utils/animations'
 import { collectCriticalAssets, preloadAll } from './utils/preloader'
-import { Analytics } from '@vercel/analytics/next';
+import { Analytics } from '@vercel/analytics/react';
 
 // Registered once at the app root so every section's ScrollTrigger shares the
 // same instance (registerPlugin is idempotent if a section registers it too).
