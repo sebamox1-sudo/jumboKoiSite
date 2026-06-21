@@ -111,7 +111,7 @@ export default function Footer() {
           </p>
 
           <p className="footer__signature" data-footer-reveal>
-            built by{' '}
+            Design by{' '}
             <a
               className="footer__signature-link"
               href="https://sebamox.dev"
