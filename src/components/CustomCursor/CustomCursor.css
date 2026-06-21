@@ -1,0 +1,76 @@
+/* ============================================================================
+   CustomCursor — the global "liquid silk" pointer
+   A tiny solid dot (the true pointer) + a trailing ring (the aura). Both ride
+   mix-blend-mode: difference, so a single white cursor inverts itself gracefully
+   over ink grounds, bright koi imagery and ivory text alike.
+
+   Transforms (x / y / scale) are owned entirely by GSAP — CSS here only styles
+   the shells and the hover "frost". Never put a transition on transform or it
+   will fight the quickTo tweens.
+   ========================================================================== */
+
+/* Hide the OS cursor only where our custom one renders (fine pointers). Touch and
+   coarse-pointer devices keep their native cursor untouched. !important overrides
+   any per-element `cursor` rule elsewhere in the app. */
+@media (pointer: fine) {
+  html,
+  html * {
+    cursor: none !important;
+  }
+}
+
+.cursor__dot,
+.cursor__ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* Never intercept clicks, hover, or selection. */
+  pointer-events: none;
+  /* Above every section, the Lenis layer and the preloader curtain (z-index 9999). */
+  z-index: 2147483647;
+  border-radius: 50%;
+  /* The whole effect: a white cursor that inverts against whatever sits beneath. */
+  mix-blend-mode: difference;
+  /* Hint the compositor; these layers move every frame. */
+  will-change: transform, opacity;
+}
+
+/* The exact pointer — a small, crisp solid disc. */
+.cursor__dot {
+  width: 7px;
+  height: 7px;
+  background: #ffffff;
+}
+
+/* The trailing aura — a fine hairline ring that blooms over clickable targets. */
+.cursor__ring {
+  width: 38px;
+  height: 38px;
+  border: 1.5px solid #ffffff;
+  background: transparent;
+  /* Appearance-only transitions (GSAP owns transform/opacity). These carry the
+     frosted hover state in and out smoothly without touching the motion. */
+  transition: background-color 0.35s ease, backdrop-filter 0.35s ease,
+    border-color 0.35s ease;
+}
+
+/* Contextual hover: a faint frosted fill behind the ring. The scale-up itself is
+   driven by GSAP; this is the "slightly frosted/blurred" cue layered on top. */
+.cursor__ring--hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.5);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+/* Respect reduced-motion: drop the blend inversion's heavier compositing and the
+   frost, keeping a calm, legible pointer. Movement still tracks the mouse. */
+@media (prefers-reduced-motion: reduce) {
+  .cursor__ring {
+    transition: none;
+  }
+  .cursor__ring--hover {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}

@@ -12,6 +12,7 @@ import Bonsai from './components/Bonsai/Bonsai'
 import Atelier from './components/Atelier/Atelier'
 import Bespoke from './components/Bespoke/Bespoke'
 import Footer from './components/Footer/Footer'
+import CustomCursor from './components/CustomCursor/CustomCursor'
 import { prefersReducedMotion } from './utils/animations'
 import { collectCriticalAssets, preloadAll } from './utils/preloader'
 
@@ -177,6 +178,11 @@ function App() {
 
   return (
     <>
+      {/* Global liquid-silk cursor. Self-disables on touch devices and lives above
+          every layer (sections, Lenis, the preloader curtain), so it's present from
+          the very first frame. */}
+      <CustomCursor />
+
       {!curtainGone && (
         <Preloader
           progress={progress}

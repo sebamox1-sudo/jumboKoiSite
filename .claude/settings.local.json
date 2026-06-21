@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(node *)",
-      "Bash(bash C:/Users/Utente/.claude/plugins/cache/fablize/fablize/2.1.0/setup/setup.sh local)"
+      "Bash(bash C:/Users/Utente/.claude/plugins/cache/fablize/fablize/2.1.0/setup/setup.sh local)",
+      "Bash(git -C \"C:/Users/Utente/Desktop/giardino-zen\" log --oneline -6)",
+      "Bash(git -C \"C:/Users/Utente/Desktop/giardino-zen\" show --stat --oneline 1cd8193)"
     ]
   }
 }

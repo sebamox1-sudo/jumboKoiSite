@@ -115,6 +115,7 @@ body {
      Plain `overflow-x: hidden` would make the Y axis a scroll container too,
      which silently breaks `position: sticky` (the hero) relative to the viewport. */
   overflow-x: clip;
+  cursor: none;
 }
 
 img,
