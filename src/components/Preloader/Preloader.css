@@ -1,64 +1,234 @@
-/* ============================================================================
-   Preloader — the "sipario" (curtain)
-   A silent black ground with a single gold ring that inks itself in while the
-   heavy assets load, then blooms and dissolves to reveal the site.
+/* ==========================================================================
+   Preloader — "Sipario" (curtain), Zen & Water edition
+
+   A dark void with vertical Kanji (錦鯉) that materialises from bottom to
+   top like sumi ink soaking into washi paper, surrounded by slowly drifting
+   warm fog.  On completion the calligraphy blooms and dissolves into blur —
+   a single drop of ink dispersing in still water.
+
+   All colours reference CSS custom properties defined by the parent design
+   system, with tasteful fallbacks so the component works in isolation.
    ========================================================================== */
 
+/* ── Ground — the void ───────────────────────────────────────────────────
+ *  Absolute darkest ground (#0a0908 is a warm black that reads less
+ *  "digital screen" and more "ink on night").  touch-action: none prevents
+ *  pull-to-refresh / scroll leaking through while the curtain is up.
+ * ─────────────────────────────────────────────────────────────────────── */
 .preloader {
   position: fixed;
   inset: 0;
   z-index: 9999;
   display: grid;
   place-items: center;
-  /* Deepest ground so the gold ink reads as light on the void. */
-  background-color: var(--color-bg);
-  /* The ground itself never receives pointer/scroll while up. */
+  background-color: var(--color-bg, #0a0908);
   touch-action: none;
+  overflow: hidden;
 }
 
-/* Wrapper that GSAP breathes (and later blooms). Separated from `.preloader`
-   so the exit bloom scales the ring without scaling the full-screen ground. */
+/* ── Fog / atmosphere ───────────────────────────────────────────────────
+ *  Three large, heavily blurred radial-gradient blobs that drift on slow
+ *  CSS keyframe loops.  Opacity is kept extremely low (0.02–0.035 alpha
+ *  in the gradient) so they read as a *suggestion* of depth rather than a
+ *  visible shape — like warm mist caught in temple lantern light.
+ *
+ *  CSS animations are used (not GSAP) because these are ambient and
+ *  infinite — the browser can optimise them on the compositor thread.
+ * ─────────────────────────────────────────────────────────────────────── */
+.preloader__fog {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.preloader__fog--a {
+  width: 65vmax;
+  height: 30vmax;
+  background: radial-gradient(
+    ellipse at 40% 50%,
+    rgba(200, 168, 107, 0.035) 0%,
+    transparent 70%
+  );
+  top: 2%;
+  left: -18%;
+  animation: preloader-drift-a 16s ease-in-out infinite alternate;
+}
+
+.preloader__fog--b {
+  width: 50vmax;
+  height: 38vmax;
+  background: radial-gradient(
+    ellipse at 60% 50%,
+    rgba(180, 148, 90, 0.025) 0%,
+    transparent 65%
+  );
+  bottom: -5%;
+  right: -12%;
+  animation: preloader-drift-b 20s ease-in-out infinite alternate;
+}
+
+/* A smaller, higher-placed wisp for vertical depth. */
+.preloader__fog--c {
+  width: 35vmax;
+  height: 22vmax;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(200, 168, 107, 0.02) 0%,
+    transparent 60%
+  );
+  top: 45%;
+  left: 35%;
+  animation: preloader-drift-c 12s ease-in-out infinite alternate;
+}
+
+/* ── Fog keyframes ───────────────────────────────────────────────────────
+ *  Deliberately slow (12–20 s) and subtle (< 55 px travel).  The
+ *  asymmetric durations ensure they never synchronise into a visible loop.
+ * ─────────────────────────────────────────────────────────────────────── */
+@keyframes preloader-drift-a {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(50px, 25px) scale(1.18);
+  }
+}
+
+@keyframes preloader-drift-b {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(-35px, -20px) scale(1.12);
+  }
+}
+
+@keyframes preloader-drift-c {
+  from {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.7;
+  }
+  to {
+    transform: translate(25px, -30px) scale(1.25);
+    opacity: 1;
+  }
+}
+
+/* ── Central mark (calligraphy wrapper) ─────────────────────────────────
+ *  Separated from .preloader so the exit bloom scales the calligraphy
+ *  without scaling the full-screen ground.  The aspect ratio (26:62 vmin)
+ *  mirrors the SVG's 200:480 to avoid letterboxing.
+ * ─────────────────────────────────────────────────────────────────────── */
 .preloader__mark {
   display: grid;
   place-items: center;
-  width: clamp(96px, 22vmin, 160px);
-  height: clamp(96px, 22vmin, 160px);
-  will-change: transform, opacity;
+  width: clamp(90px, 26vmin, 200px);
+  height: clamp(216px, 62vmin, 480px);
+  will-change: transform, opacity, filter;
+  position: relative;
+  z-index: 1;
 }
 
-.preloader__ring {
+/* ── SVG canvas ───────────────────────────────────────────────────────── */
+.preloader__svg {
   width: 100%;
   height: 100%;
-  /* Draw the arc from the top, like a rising sun closing its circle. */
-  transform: rotate(-90deg);
   overflow: visible;
 }
 
-/* The void guide — barely-there full ring the gold ink delineates over. */
-.preloader__track {
-  fill: none;
-  stroke: var(--color-ink);
-  stroke-width: 1.25;
-  opacity: 0.08;
+/* ── Kanji typography ───────────────────────────────────────────────────
+ *  Font stack favours high-quality CJK serif faces (Mincho style) that
+ *  render Kanji with the brush-like stroke modulation essential to the
+ *  sumi aesthetic.  Generic serif is the ultimate fallback.
+ *
+ *  The dual drop-shadow creates a layered warm glow: a tight 12 px halo
+ *  for immediate luminance and a wide 40 px wash for ambient atmosphere.
+ * ─────────────────────────────────────────────────────────────────────── */
+.preloader__kanji {
+  font-family:
+    'Hiragino Mincho ProN',
+    'Hiragino Mincho Pro',
+    'Yu Mincho',
+    'Noto Serif JP',
+    'Noto Serif SC',
+    'Shippori Mincho',
+    serif;
+  font-size: 128px;
+  font-weight: 300;
+  fill: var(--color-gold, #c8a86b);
+  filter:
+    drop-shadow(0 0 12px rgba(200, 168, 107, 0.22))
+    drop-shadow(0 0 40px rgba(200, 168, 107, 0.08));
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-/* The gold progress arc — soft, ink-like, rounded ends. */
-.preloader__arc {
+/* ── Sumi-e brush accent ────────────────────────────────────────────────
+ *  A single, wavy horizontal stroke beneath the Kanji — like the
+ *  artist's kaō (seal) or a stray ink wash on the washi.  Semi-
+ *  transparent so it doesn't compete with the calligraphy.
+ * ─────────────────────────────────────────────────────────────────────── */
+.preloader__brush {
   fill: none;
-  stroke: var(--color-gold);
-  stroke-width: 1.75;
+  stroke: var(--color-gold, #c8a86b);
+  stroke-width: 1.5;
   stroke-linecap: round;
-  /* A whisper of glow so it reads as luminous ink, not a UI spinner. */
-  filter: drop-shadow(0 0 6px rgba(200, 168, 107, 0.35));
+  opacity: 0.45;
+  filter: drop-shadow(0 0 6px rgba(200, 168, 107, 0.12));
 }
 
-/* Reduced motion: App skips the curtain entirely, but guard the ring just in
-   case it ever renders — no breathing, instantly closed. */
+/* ── Debug readout ──────────────────────────────────────────────────────
+ *  Sits at the very bottom of the viewport in a warm gold so faint it
+ *  feels part of the darkness rather than overlaid on it.  The monospace
+ *  face keeps it looking like a technical whisper, never a UI element.
+ * ─────────────────────────────────────────────────────────────────────── */
+.preloader__debug {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-family:
+    'SF Mono',
+    'Fira Code',
+    'Cascadia Code',
+    'Consolas',
+    monospace;
+  letter-spacing: 0.04em;
+  color: rgba(200, 168, 107, 0.2);
+  text-align: center;
+  pointer-events: none;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.preloader__debug-warn {
+  color: rgba(255, 107, 107, 0.45);
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────
+ *  App *should* skip the curtain entirely for these users (it controls
+ *  mounting), but we guard here in case the component ever renders:
+ *  all animation is frozen and the Kanji is shown in its final state.
+ * ─────────────────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .preloader__mark {
     transform: none !important;
+    opacity: 1 !important;
+    filter: none !important;
   }
-  .preloader__arc {
-    stroke-dashoffset: 0 !important;
+
+  .preloader__fog {
+    animation: none !important;
+    opacity: 0.5 !important;
+  }
+
+  .preloader__kanji {
+    filter: none !important;
+  }
+
+  .preloader__brush {
+    filter: none !important;
   }
 }
