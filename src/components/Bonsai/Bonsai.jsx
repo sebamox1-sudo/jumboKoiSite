@@ -4,6 +4,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { prefersReducedMotion } from '../../utils/animations'
 import './Bonsai.css'
+import LiquidCursorDistortion from '../LiquidCursorDistortion/LiquidCursorDistortion'
 
 // Self-contained registration — idempotent, mirrors every other section.
 gsap.registerPlugin(useGSAP, ScrollTrigger)
@@ -173,13 +174,22 @@ export default function Bonsai() {
               (translateX) so GSAP is free to own the vertical parallax on the
               <img> itself without the two transforms fighting. */}
           <div className="bonsai__tree-wrap">
-            <img
-              className="bonsai__tree"
+            <div 
+              className="bonsai__tree" 
               data-bonsai="tree"
-              src={asset(BONSAI_IMAGE)}
-              alt="Bonsai millenario — esemplare scontornato"
-              draggable="false"
-            />
+              style={{ 
+                position: 'relative', 
+                width: '100%', 
+                height: '80vh', /* Il WebGL ha bisogno di un'altezza esplicita */
+                cursor: 'crosshair' /* Dà un tocco premium */
+              }}
+            >
+              <LiquidCursorDistortion 
+                imageSrc={asset(BONSAI_IMAGE)} 
+                intensity={0.08} 
+                radius={0.35} 
+              />
+            </div>
           </div>
         </div>
 
