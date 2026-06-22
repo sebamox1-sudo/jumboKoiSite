@@ -1,0 +1,217 @@
+/* ============================================================================
+   LivingArt — "The Cinematic Aperture"
+   A 100svh dark theatre between Atelier (warm paper) and the closing Bespoke CTA.
+   A giant serif "Living Art" holds a cropped SLIT of the villa footage; while the
+   section is pinned, GSAP irises that slit OPEN via clip-path until the footage
+   fills the screen, the title lifts away and the editorial copy resolves over it.
+   Motion lives in LivingArt.jsx; the palette comes from the global tokens.
+   ========================================================================== */
+
+.living {
+  position: relative;
+  /* Sits above Atelier (z-index: 4) so the dark theatre cleanly owns the seam as
+     it rises over the paper. Bespoke (z-index: 5) follows it in flow with its own
+     ground — they never overlap, so sharing the index is safe. */
+  z-index: 5;
+  isolation: isolate;
+
+  background-color: var(--color-bg-deep); /* the deep theatre ground */
+  color: var(--color-ink);
+}
+
+/* --- The pinned stage -------------------------------------------------------
+   Exactly one (small) viewport tall — `svh` so the mobile URL-bar can't make it
+   taller than the screen and jitter the pin. Holds the stacked layers. */
+.living__frame {
+  position: relative;
+  height: 100svh;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--color-bg-deep);
+}
+
+/* --- 1. The aperture (clip-path animates on THIS wrapper) -------------------
+   Default state is OPEN (full bleed) so reduced-motion / no-JS visitors land on
+   the full footage; GSAP sets the SLIT start for motion visitors. The whole point
+   of the section: it rides its own compositor layer so re-clipping every frame
+   never repaints the page beneath it. */
+.living__media {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  background-color: var(--color-bg-deep);
+
+  -webkit-clip-path: inset(0% 0% 0% 0%);
+  clip-path: inset(0% 0% 0% 0%);
+
+  /* The performance mandate, verbatim: hint the two properties that actually move
+     and promote the layer so the clip never thrashes layout. */
+  will-change: clip-path, transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.living__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  /* GSAP owns the settling push-in — keep it on its own layer, leave it alone. */
+  will-change: transform;
+  transform: translateZ(0);
+  user-select: none;
+  pointer-events: none;
+}
+
+/* --- 2. Legibility scrim ----------------------------------------------------
+   Invisible while the slit glows on the dark ground; GSAP breathes it in to seat
+   the copy over the bright full-bleed footage. A soft vignette + a heavier base
+   gradient (where the copy lives). */
+.living__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0; /* GSAP owns this (autoAlpha); reduced-motion CSS restores it below */
+  background:
+    radial-gradient(125% 125% at 50% 32%, transparent 42%, rgba(6, 6, 5, 0.4) 100%),
+    linear-gradient(
+      to top,
+      rgba(6, 6, 5, 0.78) 0%,
+      rgba(6, 6, 5, 0.34) 30%,
+      transparent 58%
+    );
+}
+
+/* --- 3. The giant serif centrepiece ----------------------------------------
+   Naked editorial type — no card, no border. Centred, monumental, stacked. */
+.living__title {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.02em;
+  margin: 0;
+  padding-inline: 1.5rem;
+  pointer-events: none;
+  text-align: center;
+
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: clamp(3.2rem, 15vw, 15rem);
+  line-height: 0.86;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+  /* A soft halo so the ivory type holds against any frame of the footage while it
+     is still visible over the opening aperture. */
+  text-shadow: 0 0.04em 0.5em rgba(6, 6, 5, 0.55);
+  will-change: transform;
+}
+
+.living__title-word {
+  display: block;
+}
+
+/* The editorial flourish — an italic accent word, the one note of contrast in an
+   otherwise monolithic mark. */
+.living__title-word--accent {
+  font-style: italic;
+  letter-spacing: -0.01em;
+}
+
+/* --- 4. The editorial payoff ------------------------------------------------
+   Anchored to the lower third so it rises into the space the lifting title
+   vacates — one coherent upward flow. */
+.living__copy {
+  position: absolute;
+  inset: auto 0 clamp(2.5rem, 11vh, 8rem) 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1rem, 2.2vh, 1.6rem);
+  padding-inline: clamp(1.5rem, 8vw, 6rem);
+  pointer-events: none;
+  text-align: center;
+}
+
+/* A short gold hairline — typographic punctuation, not a "border". */
+.living__rule {
+  display: block;
+  width: 54px;
+  height: 1px;
+  background-color: var(--color-gold);
+  opacity: 0.85;
+}
+
+.living__kicker {
+  font-family: var(--font-sans);
+  font-size: clamp(0.66rem, 1vw, 0.8rem);
+  font-weight: 400;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.living__lead {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(1.15rem, 2.1vw, 1.9rem);
+  line-height: 1.5;
+  letter-spacing: 0.005em;
+  color: var(--color-ink);
+  max-width: 40ch;
+  text-shadow: 0 0.04em 0.5em rgba(6, 6, 5, 0.6);
+}
+
+/* --- Responsive -------------------------------------------------------------
+   The aperture, pin and copy all hold on touch; only the type rebalances and the
+   copy gets a wider safe margin from the screen edges. */
+@media (max-width: 768px) {
+  .living__title {
+    font-size: clamp(3rem, 22vw, 8rem);
+    line-height: 0.9;
+  }
+
+  .living__copy {
+    inset: auto 0 clamp(2rem, 9vh, 5rem) 0;
+    gap: 0.9rem;
+  }
+
+  .living__lead {
+    font-size: clamp(1.05rem, 4.4vw, 1.5rem);
+    max-width: 32ch;
+  }
+}
+
+@media (max-width: 480px) {
+  .living__kicker {
+    letter-spacing: 0.34em; /* relax tracking so the kanji + caps don't crowd */
+  }
+}
+
+/* --- Reduced motion: belt-and-braces --------------------------------------
+   The JS matchMedia branch already resolves these, but a visitor who somehow runs
+   without the script still lands on the full footage with the type legible, and
+   the compositor hints are dropped (no animation = nothing to promote). */
+@media (prefers-reduced-motion: reduce) {
+  .living__media {
+    -webkit-clip-path: inset(0% 0% 0% 0%);
+    clip-path: inset(0% 0% 0% 0%);
+    will-change: auto;
+  }
+
+  .living__video,
+  .living__title {
+    will-change: auto;
+  }
+
+  .living__scrim {
+    opacity: 1;
+  }
+}

@@ -3,6 +3,7 @@ import Collection from '../components/Collection/Collection'
 import Philosophy from '../components/Philosophy/Philosophy'
 import Bonsai from '../components/Bonsai/Bonsai'
 import Atelier from '../components/Atelier/Atelier'
+import LivingArt from '../components/LivingArt/LivingArt'
 import Bespoke from '../components/Bespoke/Bespoke'
 import Footer from '../components/Footer/Footer'
 
@@ -22,6 +23,7 @@ export default function Home() {
       <Philosophy />
       <Bonsai />
       <Atelier />
+      <LivingArt />
       <Bespoke />
       <Footer />
     </>
